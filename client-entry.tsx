@@ -18,12 +18,10 @@ async function handlePageChange(ctx: GrowiPageContext): Promise<void> {
 const { start, stop } = createPageChangeListener(handlePageChange);
 
 function activate(): void {
-  console.log(`[${PLUGIN_NAME}] activated`);
   start();
 }
 
 function deactivate(): void {
-  console.log(`[${PLUGIN_NAME}] deactivated`);
   stop();
   unmountSidebar();
 }
