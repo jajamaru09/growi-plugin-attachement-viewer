@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { AttachmentViewModel } from '../types';
+import { downloadFile } from '../utils/download';
 
 type Props = {
   attachments: AttachmentViewModel[];
@@ -13,12 +14,7 @@ export function DownloadAllButton({ attachments }: Props) {
     setIsDownloading(true);
     try {
       for (const attachment of attachments) {
-        const a = document.createElement('a');
-        a.href = attachment.downloadUrl;
-        a.download = attachment.downloadFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        await downloadFile(attachment.downloadUrl, attachment.downloadFileName);
         await new Promise<void>((resolve) => setTimeout(resolve, 300));
       }
     } finally {

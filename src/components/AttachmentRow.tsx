@@ -1,4 +1,5 @@
 import type { AttachmentViewModel } from '../types';
+import { downloadFile } from '../utils/download';
 import { CopyButton } from './CopyButton';
 
 type Props = {
@@ -6,17 +7,23 @@ type Props = {
 };
 
 export function AttachmentRow({ attachment }: Props) {
-  const handleDownload = () => {
-    const a = document.createElement('a');
-    a.href = attachment.downloadUrl;
-    a.download = attachment.downloadFileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownload = async () => {
+    await downloadFile(attachment.downloadUrl, attachment.downloadFileName);
   };
 
   return (
     <tr>
+      <td style={{ textAlign: 'center', verticalAlign: 'middle', minWidth: '5rem' }}>
+        {attachment.isImage ? (
+          <img
+            src={attachment.viewUrl}
+            alt={attachment.originalName}
+            style={{ maxHeight: '60px', maxWidth: '80px', objectFit: 'contain' }}
+          />
+        ) : (
+          '-'
+        )}
+      </td>
       <td>
         <div className="d-flex align-items-center gap-1">
           <span

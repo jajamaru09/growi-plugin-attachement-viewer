@@ -11,6 +11,7 @@ export function AttachmentTable({ attachments }: Props) {
       <table className="table table-sm table-bordered table-hover mb-0">
         <thead className="table-light">
           <tr>
+            <th>プレビュー</th>
             <th>ファイル名</th>
             <th>ファイルID</th>
             <th>サイズ</th>
