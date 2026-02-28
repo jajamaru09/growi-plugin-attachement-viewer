@@ -12,6 +12,14 @@ function getSidebarContainer(): Element | null {
   return (primary ?? fallback)?.parentElement ?? null;
 }
 
+function getButtonClass(): string {
+  const existingBtn = document.querySelector('[data-testid="pageListButton"] button');
+  return (
+    existingBtn?.className ??
+    'btn btn-outline-neutral-secondary rounded-pill py-1 px-lg-3'
+  );
+}
+
 export function mountSidebar(pageId: string): void {
   if (document.getElementById(MOUNT_ID) != null) {
     updatePageId?.(pageId);
@@ -31,6 +39,7 @@ export function mountSidebar(pageId: string): void {
   root.render(
     <SidebarButton
       initialPageId={pageId}
+      buttonClass={getButtonClass()}
       onRegisterUpdater={(fn) => {
         updatePageId = fn;
       }}
