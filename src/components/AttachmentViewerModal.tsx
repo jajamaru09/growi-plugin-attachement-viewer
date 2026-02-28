@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAttachments } from '../hooks/useAttachments';
 import { AttachmentTable } from './AttachmentTable';
 import { DownloadAllButton } from './DownloadAllButton';
@@ -24,7 +25,7 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* オーバーレイ */}
       <div
@@ -107,6 +108,7 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

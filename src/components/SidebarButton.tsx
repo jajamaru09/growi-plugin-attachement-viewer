@@ -22,29 +22,11 @@ export function SidebarButton({ initialPageId, onRegisterUpdater }: Props) {
     <>
       <button
         type="button"
+        className="btn btn-outline-light btn-sm rounded-pill"
         onClick={() => setIsOpen(true)}
         title="添付ファイル一覧を表示"
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          zIndex: 9000,
-          width: '3rem',
-          height: '3rem',
-          borderRadius: '50%',
-          border: 'none',
-          backgroundColor: '#4e73df',
-          color: '#fff',
-          fontSize: '1.25rem',
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          lineHeight: 1,
-        }}
       >
-        📎
+        📎 添付ファイル
       </button>
 
       <AttachmentViewerModal
