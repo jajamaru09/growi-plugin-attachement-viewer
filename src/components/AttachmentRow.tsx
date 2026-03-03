@@ -12,9 +12,11 @@ const CURSOR_OFFSET = 16;
 type Props = {
   attachment: AttachmentViewModel;
   format: DownloadFileNameFormat;
+  checked: boolean;
+  onToggle: () => void;
 };
 
-export function AttachmentRow({ attachment, format }: Props) {
+export function AttachmentRow({ attachment, format, checked, onToggle }: Props) {
   const [previewPos, setPreviewPos] = useState<{ x: number; y: number } | null>(null);
 
   const handleMouseEnter = (e: React.MouseEvent) => setPreviewPos({ x: e.clientX, y: e.clientY });
@@ -94,17 +96,7 @@ export function AttachmentRow({ attachment, format }: Props) {
         </span>
       </td>
       <td>
-        <code
-          style={{
-            maxWidth: '8rem',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            display: 'inline-block',
-            fontSize: '0.75rem',
-          }}
-          title={attachment.id}
-        >
+        <code style={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>
           {attachment.id}
         </code>
       </td>
@@ -131,6 +123,13 @@ export function AttachmentRow({ attachment, format }: Props) {
         >
           DL
         </button>
+      </td>
+      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onToggle}
+        />
       </td>
     </tr>
   );

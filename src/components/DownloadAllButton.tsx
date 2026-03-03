@@ -6,16 +6,22 @@ import { downloadFile } from '../utils/download';
 type Props = {
   attachments: AttachmentViewModel[];
   format: DownloadFileNameFormat;
+  selectedIds: Set<string>;
 };
 
-export function DownloadAllButton({ attachments, format }: Props) {
+export function DownloadAllButton({ attachments, format, selectedIds }: Props) {
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const hasSelection = selectedIds.size > 0;
+  const targets = hasSelection
+    ? attachments.filter(a => selectedIds.has(a.id))
+    : attachments;
+
   const handleClick = async () => {
-    if (isDownloading || attachments.length === 0) return;
+    if (isDownloading || targets.length === 0) return;
     setIsDownloading(true);
     try {
-      for (const attachment of attachments) {
+      for (const attachment of targets) {
         const fileName = buildDownloadFileNameByFormat(attachment.originalName, attachment.id, format);
         await downloadFile(attachment.downloadUrl, fileName);
         await new Promise<void>((resolve) => setTimeout(resolve, 300));
@@ -30,7 +36,7 @@ export function DownloadAllButton({ attachments, format }: Props) {
       type="button"
       className="btn btn-sm btn-primary"
       onClick={handleClick}
-      disabled={isDownloading || attachments.length === 0}
+      disabled={isDownloading || targets.length === 0}
     >
       {isDownloading ? (
         <>
@@ -41,6 +47,8 @@ export function DownloadAllButton({ attachments, format }: Props) {
           />
           ダウンロード中...
         </>
+      ) : hasSelection ? (
+        `選択をダウンロード (${selectedIds.size}件)`
       ) : (
         `全てダウンロード (${attachments.length}件)`
       )}

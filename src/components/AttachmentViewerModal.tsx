@@ -20,6 +20,23 @@ const FORMAT_OPTIONS: { value: DownloadFileNameFormat; label: string }[] = [
 export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
   const { attachments, isLoading, error } = useAttachments(pageId, isOpen);
   const [format, setFormat] = useState<DownloadFileNameFormat>('name-hash-ext');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const handleToggle = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (selectedIds.size === attachments.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(attachments.map(a => a.id)));
+    }
+  };
 
   // Esc キーで閉じる
   useEffect(() => {
@@ -126,10 +143,20 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
                     </label>
                   ))}
                 </div>
-                <DownloadAllButton attachments={attachments} format={format} />
+                <DownloadAllButton
+                  attachments={attachments}
+                  format={format}
+                  selectedIds={selectedIds}
+                />
               </div>
               <div className="px-3 pb-3">
-                <AttachmentTable attachments={attachments} format={format} />
+                <AttachmentTable
+                  attachments={attachments}
+                  format={format}
+                  selectedIds={selectedIds}
+                  onToggle={handleToggle}
+                  onToggleAll={handleToggleAll}
+                />
               </div>
             </>
           )}
