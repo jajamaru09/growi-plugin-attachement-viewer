@@ -13,10 +13,11 @@ type Props = {
   attachment: AttachmentViewModel;
   format: DownloadFileNameFormat;
   checked: boolean;
+  inUse: boolean;
   onToggle: () => void;
 };
 
-export function AttachmentRow({ attachment, format, checked, onToggle }: Props) {
+export function AttachmentRow({ attachment, format, checked, inUse, onToggle }: Props) {
   const [previewPos, setPreviewPos] = useState<{ x: number; y: number } | null>(null);
 
   const handleMouseEnter = (e: React.MouseEvent) => setPreviewPos({ x: e.clientX, y: e.clientY });
@@ -123,6 +124,9 @@ export function AttachmentRow({ attachment, format, checked, onToggle }: Props) 
         >
           DL
         </button>
+      </td>
+      <td style={{ textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+        {inUse ? <span className="badge bg-success">In Use</span> : '-'}
       </td>
       <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
         <input

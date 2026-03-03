@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { DownloadFileNameFormat } from '../types';
 import { useAttachments } from '../hooks/useAttachments';
+import { usePageBody } from '../hooks/usePageBody';
 import { AttachmentTable } from './AttachmentTable';
 import { DownloadAllButton } from './DownloadAllButton';
 
@@ -19,8 +20,16 @@ const FORMAT_OPTIONS: { value: DownloadFileNameFormat; label: string }[] = [
 
 export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
   const { attachments, isLoading, error } = useAttachments(pageId, isOpen);
+  const { body: pageBody } = usePageBody(pageId, isOpen);
   const [format, setFormat] = useState<DownloadFileNameFormat>('name-hash-ext');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const inUseMap = useMemo<Record<string, boolean>>(() => {
+    if (pageBody == null) return {};
+    return Object.fromEntries(
+      attachments.map((a) => [a.id, pageBody.indexOf(a.id) >= 0]),
+    );
+  }, [attachments, pageBody]);
 
   const handleToggle = (id: string) => {
     setSelectedIds(prev => {
@@ -154,6 +163,7 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
                   attachments={attachments}
                   format={format}
                   selectedIds={selectedIds}
+                  inUseMap={inUseMap}
                   onToggle={handleToggle}
                   onToggleAll={handleToggleAll}
                 />

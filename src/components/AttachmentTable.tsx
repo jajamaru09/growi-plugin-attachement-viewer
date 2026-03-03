@@ -6,11 +6,12 @@ type Props = {
   attachments: AttachmentViewModel[];
   format: DownloadFileNameFormat;
   selectedIds: Set<string>;
+  inUseMap: Record<string, boolean>;
   onToggle: (id: string) => void;
   onToggleAll: () => void;
 };
 
-export function AttachmentTable({ attachments, format, selectedIds, onToggle, onToggleAll }: Props) {
+export function AttachmentTable({ attachments, format, selectedIds, inUseMap, onToggle, onToggleAll }: Props) {
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
   const allChecked  = attachments.length > 0 && selectedIds.size === attachments.length;
   const someChecked = selectedIds.size > 0 && !allChecked;
@@ -34,6 +35,7 @@ export function AttachmentTable({ attachments, format, selectedIds, onToggle, on
             <th>MDリンク</th>
             <th>URL</th>
             <th>DL</th>
+            <th style={{ textAlign: 'center' }}>使用</th>
             <th style={{ textAlign: 'center' }}>
               <input
                 type="checkbox"
@@ -51,6 +53,7 @@ export function AttachmentTable({ attachments, format, selectedIds, onToggle, on
               attachment={a}
               format={format}
               checked={selectedIds.has(a.id)}
+              inUse={inUseMap[a.id] ?? false}
               onToggle={() => onToggle(a.id)}
             />
           ))}
