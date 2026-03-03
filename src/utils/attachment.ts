@@ -1,12 +1,25 @@
-import type { Attachment, AttachmentViewModel } from '../types';
+import type { Attachment, AttachmentViewModel, DownloadFileNameFormat } from '../types';
 import { formatFileSize } from './format';
 
-export function buildDownloadFileName(originalName: string, id: string): string {
+export function buildDownloadFileNameByFormat(
+  originalName: string,
+  id: string,
+  format: DownloadFileNameFormat,
+): string {
   const lastDot = originalName.lastIndexOf('.');
-  if (lastDot === -1) return `${originalName}-${id}`;
-  const base = originalName.substring(0, lastDot);
-  const ext = originalName.substring(lastDot + 1);
-  return `${base}-${id}.${ext}`;
+  const hasExt = lastDot !== -1;
+  const base = hasExt ? originalName.substring(0, lastDot) : originalName;
+  const ext = hasExt ? originalName.substring(lastDot + 1) : '';
+
+  switch (format) {
+    case 'hash-only':
+      return id;
+    case 'hash-ext':
+      return hasExt ? `${id}.${ext}` : id;
+    case 'name-hash-ext':
+    default:
+      return hasExt ? `${base}-${id}.${ext}` : `${base}-${id}`;
+  }
 }
 
 export function buildMarkdownLink(name: string, url: string, isImage: boolean): string {
@@ -28,7 +41,6 @@ export function toViewModel(attachment: Attachment, origin: string): AttachmentV
     viewUrl,
     downloadUrl,
     markdownLink: buildMarkdownLink(attachment.originalName, viewUrl, isImage),
-    downloadFileName: buildDownloadFileName(attachment.originalName, attachment._id),
   };
 }
 

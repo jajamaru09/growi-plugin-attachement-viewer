@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import type { DownloadFileNameFormat } from '../types';
 import { useAttachments } from '../hooks/useAttachments';
 import { AttachmentTable } from './AttachmentTable';
 import { DownloadAllButton } from './DownloadAllButton';
@@ -10,8 +11,15 @@ type Props = {
   onClose: () => void;
 };
 
+const FORMAT_OPTIONS: { value: DownloadFileNameFormat; label: string }[] = [
+  { value: 'hash-only', label: 'ハッシュのみ' },
+  { value: 'hash-ext', label: 'ハッシュ＋拡張子' },
+  { value: 'name-hash-ext', label: 'ファイル名_ハッシュ.拡張子' },
+];
+
 export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
   const { attachments, isLoading, error } = useAttachments(pageId, isOpen);
+  const [format, setFormat] = useState<DownloadFileNameFormat>('name-hash-ext');
 
   // Esc キーで閉じる
   useEffect(() => {
@@ -98,11 +106,30 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
 
           {!isLoading && !error && attachments.length > 0 && (
             <>
-              <div className="px-3 pt-3 pb-2">
-                <DownloadAllButton attachments={attachments} />
+              <div className="px-3 pt-3 pb-2 d-flex align-items-center gap-3 flex-wrap">
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <small className="text-muted">DL ファイル名:</small>
+                  {FORMAT_OPTIONS.map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className="d-flex align-items-center gap-1"
+                      style={{ cursor: 'pointer', marginBottom: 0 }}
+                    >
+                      <input
+                        type="radio"
+                        name="dl-filename-format"
+                        value={value}
+                        checked={format === value}
+                        onChange={() => setFormat(value)}
+                      />
+                      <small>{label}</small>
+                    </label>
+                  ))}
+                </div>
+                <DownloadAllButton attachments={attachments} format={format} />
               </div>
               <div className="px-3 pb-3">
-                <AttachmentTable attachments={attachments} />
+                <AttachmentTable attachments={attachments} format={format} />
               </div>
             </>
           )}

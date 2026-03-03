@@ -1,14 +1,20 @@
-import type { AttachmentViewModel } from '../types';
+import { useState } from 'react';
+import type { AttachmentViewModel, DownloadFileNameFormat } from '../types';
+import { buildDownloadFileNameByFormat } from '../utils/attachment';
 import { downloadFile } from '../utils/download';
 import { CopyButton } from './CopyButton';
 
 type Props = {
   attachment: AttachmentViewModel;
+  format: DownloadFileNameFormat;
 };
 
-export function AttachmentRow({ attachment }: Props) {
+export function AttachmentRow({ attachment, format }: Props) {
+  const [hovered, setHovered] = useState(false);
+
   const handleDownload = async () => {
-    await downloadFile(attachment.downloadUrl, attachment.downloadFileName);
+    const fileName = buildDownloadFileNameByFormat(attachment.originalName, attachment.id, format);
+    await downloadFile(attachment.downloadUrl, fileName);
   };
 
   return (
@@ -18,46 +24,48 @@ export function AttachmentRow({ attachment }: Props) {
           <img
             src={attachment.viewUrl}
             alt={attachment.originalName}
-            style={{ maxHeight: '60px', maxWidth: '80px', objectFit: 'contain' }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+              maxHeight: hovered ? '120px' : '60px',
+              maxWidth: hovered ? '160px' : '80px',
+              objectFit: 'contain',
+              transition: 'max-height 0.2s ease, max-width 0.2s ease',
+              cursor: 'zoom-in',
+            }}
           />
         ) : (
           '-'
         )}
       </td>
       <td>
-        <div className="d-flex align-items-center gap-1">
-          <span
-            style={{
-              maxWidth: '12rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              display: 'inline-block',
-            }}
-            title={attachment.originalName}
-          >
-            {attachment.originalName}
-          </span>
-          <CopyButton text={attachment.originalName} label="コピー" />
-        </div>
+        <span
+          style={{
+            maxWidth: '12rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'inline-block',
+          }}
+          title={attachment.originalName}
+        >
+          {attachment.originalName}
+        </span>
       </td>
       <td>
-        <div className="d-flex align-items-center gap-1">
-          <code
-            style={{
-              maxWidth: '8rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              display: 'inline-block',
-              fontSize: '0.75rem',
-            }}
-            title={attachment.id}
-          >
-            {attachment.id}
-          </code>
-          <CopyButton text={attachment.id} label="コピー" />
-        </div>
+        <code
+          style={{
+            maxWidth: '8rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'inline-block',
+            fontSize: '0.75rem',
+          }}
+          title={attachment.id}
+        >
+          {attachment.id}
+        </code>
       </td>
       <td style={{ whiteSpace: 'nowrap' }}>{attachment.fileSizeLabel}</td>
       <td style={{ whiteSpace: 'nowrap' }}>
@@ -78,7 +86,7 @@ export function AttachmentRow({ attachment }: Props) {
           type="button"
           className="btn btn-sm btn-outline-secondary"
           onClick={handleDownload}
-          title={`${attachment.downloadFileName} をダウンロード`}
+          title={`${buildDownloadFileNameByFormat(attachment.originalName, attachment.id, format)} をダウンロード`}
         >
           DL
         </button>

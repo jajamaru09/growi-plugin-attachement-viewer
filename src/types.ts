@@ -24,6 +24,8 @@ export type AttachmentListResponse = {
   };
 };
 
+export type DownloadFileNameFormat = 'hash-only' | 'hash-ext' | 'name-hash-ext';
+
 /** UI 表示用に加工した添付ファイル型 */
 export type AttachmentViewModel = {
   id: string;
@@ -36,5 +38,4 @@ export type AttachmentViewModel = {
   viewUrl: string;
   downloadUrl: string;
   markdownLink: string;
-  downloadFileName: string;
 };

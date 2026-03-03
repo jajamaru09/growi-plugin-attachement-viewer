@@ -1,11 +1,12 @@
-import type { AttachmentViewModel } from '../types';
+import type { AttachmentViewModel, DownloadFileNameFormat } from '../types';
 import { AttachmentRow } from './AttachmentRow';
 
 type Props = {
   attachments: AttachmentViewModel[];
+  format: DownloadFileNameFormat;
 };
 
-export function AttachmentTable({ attachments }: Props) {
+export function AttachmentTable({ attachments, format }: Props) {
   return (
     <div style={{ overflowX: 'auto' }}>
       <table className="table table-sm table-bordered table-hover mb-0">
@@ -23,7 +24,7 @@ export function AttachmentTable({ attachments }: Props) {
         </thead>
         <tbody>
           {attachments.map((a) => (
-            <AttachmentRow key={a.id} attachment={a} />
+            <AttachmentRow key={a.id} attachment={a} format={format} />
           ))}
         </tbody>
       </table>
