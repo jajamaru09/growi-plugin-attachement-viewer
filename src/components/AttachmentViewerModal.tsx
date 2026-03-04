@@ -47,6 +47,13 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
     }
   };
 
+  const inUseCount = Object.values(inUseMap).filter(Boolean).length;
+
+  const handleSelectInUse = () => {
+    const inUseIds = attachments.filter(a => inUseMap[a.id]).map(a => a.id);
+    setSelectedIds(new Set(inUseIds));
+  };
+
   // Esc キーで閉じる
   useEffect(() => {
     if (!isOpen) return;
@@ -83,7 +90,7 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 9999,
-          width: 'min(90vw, 900px)',
+          width: 'min(92vw, 1200px)',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
@@ -152,6 +159,14 @@ export function AttachmentViewerModal({ pageId, isOpen, onClose }: Props) {
                     </label>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-success"
+                  onClick={handleSelectInUse}
+                  disabled={inUseCount === 0}
+                >
+                  InUse を選択 ({inUseCount}件)
+                </button>
                 <DownloadAllButton
                   attachments={attachments}
                   format={format}
