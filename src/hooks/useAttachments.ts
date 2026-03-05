@@ -11,18 +11,24 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
   );
   if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
   const firstData: AttachmentListResponse = await firstRes.json();
-  const { totalPages } = firstData.paginateResult;
+  const { docs: firstDocs, limit, totalDocs } = firstData.paginateResult;
 
-  const allDocs: Attachment[] = [...firstData.paginateResult.docs];
+  const allDocs: Attachment[] = [...firstDocs];
 
-  for (let page = 2; page <= totalPages; page++) {
+  // totalPages は GROWI バージョンによって不正確なことがあるため
+  // totalDocs / limit から実際のページ数を自前で計算する
+  const expectedPages = Math.ceil(totalDocs / limit);
+
+  for (let page = 2; page <= expectedPages; page++) {
     const res = await fetch(
       `/_api/v3/attachment/list?pageId=${pageId}&page=${page}`,
       { credentials: 'include' },
     );
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
-    allDocs.push(...data.paginateResult.docs);
+    const docs = data.paginateResult.docs;
+    allDocs.push(...docs);
+    if (docs.length === 0) break; // 空ページが来たら安全に終了
   }
 
   // _id による重複排除
