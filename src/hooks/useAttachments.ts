@@ -2,20 +2,33 @@ import { useEffect, useState } from 'react';
 import type { AttachmentListResponse, AttachmentViewModel } from '../types';
 import { fetchImageDimensions, toViewModel } from '../utils/attachment';
 
+// GROWI API の正規ページネーションパラメータ:
+//   pageNumber: ページ番号（1-indexed）※ "page" は Wiki ページ識別子と混同されるため使用不可
+//   limit: 1 リクエストあたりの件数（最大 100）
+const ATTACHMENT_LIST_LIMIT = 100;
+
 async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[]> {
   const origin = window.location.origin;
+  const allDocs: AttachmentListResponse['paginateResult']['docs'] = [];
+  let pageNumber = 1;
 
-  // GROWI API は page/offset パラメータを無視するため、limit に大きな値を指定して一括取得する
-  const res = await fetch(
-    `/_api/v3/attachment/list?pageId=${pageId}&page=1&limit=9999`,
-    { credentials: 'include' },
-  );
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  const data: AttachmentListResponse = await res.json();
-  const docs = data.paginateResult.docs;
+  while (true) {
+    const res = await fetch(
+      `/_api/v3/attachment/list?pageId=${pageId}&pageNumber=${pageNumber}&limit=${ATTACHMENT_LIST_LIMIT}`,
+      { credentials: 'include' },
+    );
+    if (!res.ok) throw new Error(`API error: ${res.status} (pageNumber ${pageNumber})`);
+    const data: AttachmentListResponse = await res.json();
+    const { docs, totalPages } = data.paginateResult;
+
+    allDocs.push(...docs);
+
+    if (pageNumber >= totalPages) break;
+    pageNumber++;
+  }
 
   // _id による重複排除
-  const uniqueDocs = Array.from(new Map(docs.map((d) => [d._id, d])).values());
+  const uniqueDocs = Array.from(new Map(allDocs.map((d) => [d._id, d])).values());
   return uniqueDocs.map((a) => toViewModel(a, origin));
 }
 
