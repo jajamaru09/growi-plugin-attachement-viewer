@@ -1,51 +1,21 @@
 import { useEffect, useState } from 'react';
-import type { Attachment, AttachmentListResponse, AttachmentViewModel } from '../types';
+import type { AttachmentListResponse, AttachmentViewModel } from '../types';
 import { fetchImageDimensions, toViewModel } from '../utils/attachment';
 
 async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[]> {
   const origin = window.location.origin;
 
-  const firstRes = await fetch(
-    `/_api/v3/attachment/list?pageId=${pageId}&page=1`,
+  // GROWI API は page/offset パラメータを無視するため、limit に大きな値を指定して一括取得する
+  const res = await fetch(
+    `/_api/v3/attachment/list?pageId=${pageId}&page=1&limit=9999`,
     { credentials: 'include' },
   );
-  if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
-  const firstData: AttachmentListResponse = await firstRes.json();
-  console.log('[DEBUG] page=1 raw response:', JSON.stringify(firstData).slice(0, 500));
-
-  const paginateResult1 = firstData.paginateResult;
-  console.log('[DEBUG] paginateResult exists:', !!paginateResult1);
-  console.log('[DEBUG] page=1 paginateResult:', paginateResult1
-    ? { totalDocs: paginateResult1.totalDocs, limit: paginateResult1.limit, totalPages: paginateResult1.totalPages, docsCount: paginateResult1.docs?.length }
-    : 'undefined'
-  );
-
-  const { docs: firstDocs, limit, totalDocs } = firstData.paginateResult;
-
-  const allDocs: Attachment[] = [...firstDocs];
-
-  const expectedPages = Math.ceil(totalDocs / limit);
-  console.log('[DEBUG] totalDocs:', totalDocs, 'limit:', limit, 'expectedPages:', expectedPages);
-
-  for (let page = 2; page <= expectedPages; page++) {
-    const offset = (page - 1) * limit;
-    const res = await fetch(
-      `/_api/v3/attachment/list?pageId=${pageId}&offset=${offset}`,
-      { credentials: 'include' },
-    );
-    if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
-    const data: AttachmentListResponse = await res.json();
-    const docs = data.paginateResult.docs;
-    console.log('[DEBUG] page=' + page + ' offset=' + offset + ' docsCount:', docs?.length);
-    allDocs.push(...docs);
-    if (docs.length === 0) break;
-  }
-
-  console.log('[DEBUG] allDocs total before dedup:', allDocs.length);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const data: AttachmentListResponse = await res.json();
+  const docs = data.paginateResult.docs;
 
   // _id による重複排除
-  const uniqueDocs = Array.from(new Map(allDocs.map((d) => [d._id, d])).values());
-  console.log('[DEBUG] uniqueDocs after dedup:', uniqueDocs.length);
+  const uniqueDocs = Array.from(new Map(docs.map((d) => [d._id, d])).values());
   return uniqueDocs.map((a) => toViewModel(a, origin));
 }
 
