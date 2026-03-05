@@ -11,9 +11,9 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
   );
   if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
   const firstData: AttachmentListResponse = await firstRes.json();
-  const { totalPages } = firstData;
+  const { totalPages } = firstData.paginateResult;
 
-  const allDocs: Attachment[] = [...firstData.docs];
+  const allDocs: Attachment[] = [...firstData.paginateResult.docs];
 
   for (let page = 2; page <= totalPages; page++) {
     const res = await fetch(
@@ -22,7 +22,7 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
     );
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
-    allDocs.push(...data.docs);
+    allDocs.push(...data.paginateResult.docs);
   }
 
   // _id による重複排除
