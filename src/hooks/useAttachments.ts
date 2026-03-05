@@ -11,13 +11,21 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
   );
   if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
   const firstData: AttachmentListResponse = await firstRes.json();
+  console.log('[DEBUG] page=1 raw response:', JSON.stringify(firstData).slice(0, 500));
+
+  const paginateResult1 = firstData.paginateResult;
+  console.log('[DEBUG] paginateResult exists:', !!paginateResult1);
+  console.log('[DEBUG] page=1 paginateResult:', paginateResult1
+    ? { totalDocs: paginateResult1.totalDocs, limit: paginateResult1.limit, totalPages: paginateResult1.totalPages, docsCount: paginateResult1.docs?.length }
+    : 'undefined'
+  );
+
   const { docs: firstDocs, limit, totalDocs } = firstData.paginateResult;
 
   const allDocs: Attachment[] = [...firstDocs];
 
-  // totalPages は GROWI バージョンによって不正確なことがあるため
-  // totalDocs / limit から実際のページ数を自前で計算する
   const expectedPages = Math.ceil(totalDocs / limit);
+  console.log('[DEBUG] totalDocs:', totalDocs, 'limit:', limit, 'expectedPages:', expectedPages);
 
   for (let page = 2; page <= expectedPages; page++) {
     const res = await fetch(
@@ -27,12 +35,16 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
     const docs = data.paginateResult.docs;
+    console.log('[DEBUG] page=' + page + ' docsCount:', docs?.length);
     allDocs.push(...docs);
-    if (docs.length === 0) break; // 空ページが来たら安全に終了
+    if (docs.length === 0) break;
   }
+
+  console.log('[DEBUG] allDocs total before dedup:', allDocs.length);
 
   // _id による重複排除
   const uniqueDocs = Array.from(new Map(allDocs.map((d) => [d._id, d])).values());
+  console.log('[DEBUG] uniqueDocs after dedup:', uniqueDocs.length);
   return uniqueDocs.map((a) => toViewModel(a, origin));
 }
 
