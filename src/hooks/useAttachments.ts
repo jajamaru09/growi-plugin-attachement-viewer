@@ -15,9 +15,9 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
 
-    allDocs.push(...data.docs);
+    allDocs.push(...data.paginateResult.docs);
 
-    if (!data.hasNextPage) break;
+    if (!data.paginateResult.hasNextPage) break;
     page++;
   }
 
