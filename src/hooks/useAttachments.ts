@@ -1,35 +1,29 @@
 import { useEffect, useState } from 'react';
-import type { AttachmentListResponse, AttachmentViewModel } from '../types';
+import type { Attachment, AttachmentListResponse, AttachmentViewModel } from '../types';
 import { fetchImageDimensions, toViewModel } from '../utils/attachment';
 
 async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[]> {
   const origin = window.location.origin;
+  const allDocs: Attachment[] = [];
+  let page = 1;
 
-  const firstRes = await fetch(
-    `/_api/v3/attachment/list?pageId=${pageId}&page=1`,
-    { credentials: 'include' },
-  );
-  if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
-  const firstData: AttachmentListResponse = await firstRes.json();
-  const { totalPages } = firstData.paginateResult;
-
-  let docs = [...firstData.paginateResult.docs];
-
-  if (totalPages > 1) {
-    const pageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-    const results = await Promise.allSettled(
-      pageNums.map((p) =>
-        fetch(`/_api/v3/attachment/list?pageId=${pageId}&page=${p}`, {
-          credentials: 'include',
-        }).then((r) => r.json() as Promise<AttachmentListResponse>),
-      ),
+  while (true) {
+    const res = await fetch(
+      `/_api/v3/attachment/list?pageId=${pageId}&page=${page}`,
+      { credentials: 'include' },
     );
-    for (const r of results) {
-      if (r.status === 'fulfilled') docs = docs.concat(r.value.paginateResult.docs);
-    }
+    if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
+    const data: AttachmentListResponse = await res.json();
+
+    allDocs.push(...data.docs);
+
+    if (!data.hasNextPage) break;
+    page++;
   }
 
-  return docs.map((a) => toViewModel(a, origin));
+  // _id による重複排除
+  const uniqueDocs = Array.from(new Map(allDocs.map((d) => [d._id, d])).values());
+  return uniqueDocs.map((a) => toViewModel(a, origin));
 }
 
 export function useAttachments(pageId: string, isOpen: boolean) {
