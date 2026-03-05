@@ -28,14 +28,15 @@ async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[
   console.log('[DEBUG] totalDocs:', totalDocs, 'limit:', limit, 'expectedPages:', expectedPages);
 
   for (let page = 2; page <= expectedPages; page++) {
+    const offset = (page - 1) * limit;
     const res = await fetch(
-      `/_api/v3/attachment/list?pageId=${pageId}&page=${page}`,
+      `/_api/v3/attachment/list?pageId=${pageId}&offset=${offset}`,
       { credentials: 'include' },
     );
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
     const docs = data.paginateResult.docs;
-    console.log('[DEBUG] page=' + page + ' docsCount:', docs?.length);
+    console.log('[DEBUG] page=' + page + ' offset=' + offset + ' docsCount:', docs?.length);
     allDocs.push(...docs);
     if (docs.length === 0) break;
   }
