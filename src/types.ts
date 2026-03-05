@@ -13,19 +13,17 @@ export type Attachment = {
 };
 
 export type AttachmentListResponse = {
-  paginateResult: {
-    docs: Attachment[];
-    totalDocs: number;
-    limit: number;
-    page: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-    offset: number;
-    prevPage: number | null;
-    nextPage: number | null;
-    pagingCounter: number;
-  };
+  docs: Attachment[];
+  totalDocs: number;
+  limit: number;
+  page: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  offset: number;
+  prevPage: number | null;
+  nextPage: number | null;
+  pagingCounter: number;
 };
 
 export type DownloadFileNameFormat = 'hash-only' | 'hash-ext' | 'name-hash-ext';

@@ -4,21 +4,25 @@ import { fetchImageDimensions, toViewModel } from '../utils/attachment';
 
 async function fetchAllAttachments(pageId: string): Promise<AttachmentViewModel[]> {
   const origin = window.location.origin;
-  const allDocs: Attachment[] = [];
-  let page = 1;
 
-  while (true) {
+  const firstRes = await fetch(
+    `/_api/v3/attachment/list?pageId=${pageId}&page=1`,
+    { credentials: 'include' },
+  );
+  if (!firstRes.ok) throw new Error(`API error: ${firstRes.status}`);
+  const firstData: AttachmentListResponse = await firstRes.json();
+  const { totalPages } = firstData;
+
+  const allDocs: Attachment[] = [...firstData.docs];
+
+  for (let page = 2; page <= totalPages; page++) {
     const res = await fetch(
       `/_api/v3/attachment/list?pageId=${pageId}&page=${page}`,
       { credentials: 'include' },
     );
     if (!res.ok) throw new Error(`API error: ${res.status} (page ${page})`);
     const data: AttachmentListResponse = await res.json();
-
-    allDocs.push(...data.paginateResult.docs);
-
-    if (!data.paginateResult.hasNextPage) break;
-    page++;
+    allDocs.push(...data.docs);
   }
 
   // _id による重複排除
